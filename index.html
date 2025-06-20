@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Список завдань</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #ede7f6 0%, #f3e5f5 100%);
+        }
+
+        .task-card {
+            border-left: 5px solid #b39ddb;
+            background-color: white;
+        }
+
+        .soft-btn {
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            border-radius: 50px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .soft-btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .btn-status {
+            background-color: #a0d9cc;
+            color: #1c4c47;
+        }
+
+        .btn-edit {
+            background-color: #c5b3e6;
+            color: #3d276b;
+        }
+
+        .btn-delete {
+            background-color: #f2b8b5;
+            color: #721c24;
+        }
+
+        .form-container {
+            background-color: #fdfcff;
+            border: 2px solid #d1c4e9;
+            border-radius: 10px;
+        }
+
+        .btn-dark {
+            background-color: #7e57c2;
+            border-color: #7e57c2;
+        }
+
+        .btn-dark:hover {
+            background-color: #673ab7;
+        }
+    </style>
+</head>
+<body class="container py-4">
+
+<div class="row">
+    <!-- Ліва частина: Список завдань -->
+    <div class="col-md-7">
+        <h2 class="mb-4 text-center text-dark">📝 Список завдань</h2>
+        <div id="task-section">
+            {% for task in tasks %}
+                <div class="task-card mb-3 p-3 rounded shadow-sm">
+                    <strong>{{ task.title }}</strong><br>
+                    <small class="text-muted">{{ task.subtitle }}</small><br>
+                    <span class="badge bg-{{ 'success' if task.status == 'виконано' else 'warning' }}">
+                        {{ task.status }}
+                    </span>
+
+                    <div class="d-flex justify-content-end gap-2 mt-2 flex-wrap">
+                        <!-- Всі можуть змінювати статус -->
+                        <form method="POST" action="/status/{{ task.id }}">
+                            <button type="submit" class="soft-btn btn-status">✅ Змінити статус</button>
+                        </form>
+
+                        {% if current_user.is_authenticated and current_user.role == 'Керівник' %}
+                            <!-- Лише керівник бачить кнопки редагування і видалення -->
+                            <button class="soft-btn btn-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ task.id }}">✏️ Редагувати</button>
+
+                            <form method="POST" action="/delete/{{ task.id }}">
+                                <button type="submit" class="soft-btn btn-delete">🗑️ Видалити</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Модальне вікно редагування (тільки для Керівника) -->
+                {% if current_user.is_authenticated and current_user.role == 'Керівник' %}
+                <div class="modal fade" id="editModal{{ task.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ task.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="POST" action="/edit/{{ task.id }}">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Редагувати завдання</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="text" name="title" class="form-control mb-2" value="{{ task.title }}" required>
+                                    <textarea name="subtitle" class="form-control" rows="3">{{ task.subtitle }}</textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                                    <button type="submit" class="btn btn-primary">Зберегти</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Права частина: Форма створення (тільки для Керівника) -->
+    {% if current_user.is_authenticated and current_user.role == 'Керівник' %}
+    <div class="col-md-5">
+        <div class="p-4" style="border: 2px solid black; border-radius: 10px;">
+            <h4 class="text-center mb-3 text-dark">➕ Додати нове завдання</h4>
+            <form method="POST" action="/add">
+                <div class="mb-3">
+                    <input type="text" name="title" class="form-control text-center" placeholder="Заголовок" required>
+                </div>
+                <div class="mb-3">
+                    <textarea name="subtitle" class="form-control" placeholder="Опис завдання" rows="7"></textarea>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-dark">Додати</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

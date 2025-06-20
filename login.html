@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Вхід{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <h2 class="mb-4 text-center">Вхід до системи</h2>
+
+    {% if form.errors.get('general') %}
+      <div class="alert alert-danger" role="alert">
+        {{ form.errors.get('general')[0] }}
+      </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+      {{ form.hidden_tag() }}
+
+      <div class="mb-3">
+        {{ form.username.label(class="form-label", for="username") }}
+        {{ form.username(class="form-control", id="username", placeholder="Ім'я користувача", autofocus=True) }}
+        {% if form.username.errors %}
+          <div class="text-danger small">
+            {{ form.username.errors[0] }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        {{ form.password.label(class="form-label", for="password") }}
+        {{ form.password(class="form-control", id="password", placeholder="Пароль") }}
+        {% if form.password.errors %}
+          <div class="text-danger small">
+            {{ form.password.errors[0] }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary">Увійти</button>
+      </div>
+    </form>
+
+    <p class="mt-3 text-center">
+      Немає аккаунту? <a href="{{ url_for('register') }}">Зареєструватися</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
